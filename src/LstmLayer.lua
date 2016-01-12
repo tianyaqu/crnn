@@ -50,14 +50,15 @@ end
 local LstmLayer, parent = torch.class('nn.LstmLayer', 'nn.Module')
 
 
-function LstmLayer:__init(nIn, nHidden, maxT, dropout, reverse)
+function LstmLayer:__init(nIn, nHidden, maxT, dropout, reverse,useCPU)
     --[[
     ARGS:
       - `nIn`     : integer, number of input dimensions
       - `nHidden` : integer, number of hidden nodes
       - `maxT`    : integer, maximum length of input sequence
-      - `dropout` : boolean, if true apply dropout
+      - `dropout` : numeric, probability of being dropped
       - `reverse` : boolean, if true the sequence is traversed from the end to the start
+      - `useCPU`  : boolean, if tre then use cpu,default is gpu
     ]]
     parent.__init(self)
 
@@ -65,6 +66,7 @@ function LstmLayer:__init(nIn, nHidden, maxT, dropout, reverse)
     self.reverse = reverse or false
     self.nHidden = nHidden
     self.maxT    = maxT
+    self.useCPU  = useCPU or false
 
     self.output    = {}
     self.gradInput = {}
@@ -74,7 +76,11 @@ function LstmLayer:__init(nIn, nHidden, maxT, dropout, reverse)
     self.clones   = {}
 
     -- LSTM states
-    self.initState = {torch.CudaTensor(), torch.CudaTensor()} -- c, h
+    if not self.useCPU then
+        self.initState = {torch.CudaTensor(), torch.CudaTensor()} -- c, h
+    else
+        self.initState = {torch.FloatTensor(), torch.FloatTensor()} -- c, h
+    end
 
     self:reset()
 end

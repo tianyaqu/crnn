@@ -1,7 +1,4 @@
-require('cutorch')
 require('nn')
-require('cunn')
-require('cudnn')
 require('optim')
 require('paths')
 require('nngraph')
@@ -18,15 +15,22 @@ require('SharedParallelTable')
 
 
 -- configurations
-cutorch.setDevice(1)
-torch.setnumthreads(4)
-torch.setdefaulttensortype('torch.FloatTensor')
 local modelDir = arg[1]
 setupLogger(paths.concat(modelDir, 'log.txt'))
 paths.dofile(paths.concat(modelDir, 'config.lua'))
 gConfig = getConfig()
 gConfig.modelDir = modelDir
 
+if not gConfig.useCPU then
+    require('cutorch')
+    require('cunn')
+    require('cudnn')
+    
+    cutorch.setDevice(1)
+end
+
+torch.setnumthreads(4)
+torch.setdefaulttensortype('torch.FloatTensor')
 -- `createModel` is defined in config.lua, it returns the network model and the criterion (loss function)
 local model, criterion = createModel(gConfig)
 logging(string.format('Model configuration:\n%s', model))

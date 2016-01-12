@@ -1,7 +1,5 @@
 require('cutorch')
 require('nn')
-require('cunn')
-require('cudnn')
 require('optim')
 require('paths')
 require('nngraph')
@@ -15,6 +13,13 @@ require('LstmLayer')
 require('BiRnnJoin')
 require('SharedParallelTable')
 
+if not gConfig.useCPU then
+    require('cutorch')
+    require('cunn')
+    require('cudnn')
+    
+    cutorch.setDevice(1)
+end
 
 cutorch.setDevice(1)
 torch.setnumthreads(4)
